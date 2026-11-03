@@ -1,0 +1,42 @@
+/* Theme layer: loaded after styles.css. Variables are set by js/theme.js */
+html{background:var(--bg)}
+.side{background:var(--card)}
+.top{background:color-mix(in srgb,var(--bg) 88%,transparent)}
+.badge,.avatar{color:var(--on-p)}
+.dotbadge{border-color:var(--bg)}
+.card{border-radius:var(--r,16px);background:var(--card);border-color:var(--bd)}
+.in,select.in,input.in{background:var(--card);color:var(--tx);border-color:var(--bd)}
+/* Logo: image is never altered; a white plate keeps it legible on any theme */
+.logo{background-color:#fff;border-radius:10px;box-shadow:0 0 0 1px var(--bd)}
+html[data-density=compact] td,html[data-density=compact] th{padding-top:6px;padding-bottom:6px}
+html[data-density=compact] main{padding-top:16px}
+.themepop{position:fixed;top:64px;right:12px;width:min(340px,calc(100vw - 24px));max-height:calc(100vh - 80px);overflow:auto;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:var(--r,16px);box-shadow:0 12px 40px rgba(0,0,0,.22);padding:16px;z-index:60}
+.themepop h2{margin:0 0 4px;font-size:16px}.themepop h3{margin:14px 0 6px;font-size:12.5px;color:var(--mu);font-weight:600}
+.seg{display:flex;gap:4px;padding:4px;background:var(--bg2);border-radius:12px}
+.seg button{flex:1;min-height:44px;border:0;border-radius:9px;background:none;color:var(--tx2);font:600 13px inherit;cursor:pointer}
+.seg button[aria-pressed=true]{background:var(--card);color:var(--p);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.sw{display:flex;flex-wrap:wrap;gap:8px}
+.swatch{width:44px;height:44px;border-radius:50%;border:2px solid var(--card);box-shadow:0 0 0 1px var(--bd);cursor:pointer}
+.swatch[aria-pressed=true]{box-shadow:0 0 0 3px var(--p)}
+.themepop .row{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;font-size:12.5px;color:var(--tx2)}
+.themepop .row label{display:flex;flex-direction:column;gap:4px}
+.themepop input[type=color]{width:44px;height:44px;padding:2px;border:1px solid var(--bd);border-radius:10px;background:var(--card);cursor:pointer}
+.warnbox{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--warnt);color:var(--tx);font-size:13px}
+.fixbtn{min-height:44px;margin-top:8px;padding:0 14px;border:1px solid var(--p);border-radius:10px;background:none;color:var(--p);font:600 13px inherit;cursor:pointer}
+@media print{:root{--bg:#fff!important;--bg2:#f3f3f3!important;--card:#fff!important;--tx:#111!important;--tx2:#333!important;--mu:#555!important;--bd:#ccc!important}.themepop,#themebtn{display:none!important}}
+/* Visibility fixes: every surface and text pair comes from theme variables, never fixed white */
+.btn{color:var(--on-p)}
+.btn:hover{background:var(--p2)}
+.btn.ghost{background:var(--card);color:var(--tx);border-color:var(--bd)}
+.btn.ghost:hover{background:var(--bg2);color:var(--tx)}
+.btn:disabled{opacity:.55}
+.item{background:var(--card)}
+tbody tr:hover td{background:var(--bg2)}
+.tip{background:var(--card);color:var(--tx)}
+.toast{background:var(--tx);color:var(--bg)}
+.toast.err{background:var(--badt);color:var(--bad);border:1px solid var(--bad)}
+.in:focus{box-shadow:0 0 0 3px color-mix(in srgb,var(--p) 22%,transparent)}
+.in::placeholder{color:var(--mu);opacity:1}
+select.in option{background:var(--card);color:var(--tx)}
+.msg{color:var(--tx)}.msg.u{background:var(--pt)}.msg.a{background:var(--bg2)}
+.chip{background:var(--bg);color:var(--p)}
