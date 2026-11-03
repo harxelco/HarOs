@@ -3,6 +3,7 @@ let db, role = "Business Owner";
 const ui = { days: 30, fdays: 90, q: "", cat: "", rtype: "Sales report", rdays: 30, chat: [] };
 const charts = {};
 try { const raw = localStorage.getItem(KEY); db = raw ? JSON.parse(raw) : seed(); role = localStorage.getItem(KEY + "-role") || role; } catch (e) { db = seed(); }
+if (!db.invoices) db = withV2(db);
 if (!ROLES[role]) role = "Business Owner";
 const $ = (s) => document.querySelector(s), esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const ICONS = {

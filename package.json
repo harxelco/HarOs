@@ -1,0 +1,18 @@
+{
+  "name": "harxel-business-os-html",
+  "version": "1.0.0",
+  "description": "Harxel Business OS HTML demo",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "node --test tests/"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "jsdom": "^30.1.3"
+  }
+}

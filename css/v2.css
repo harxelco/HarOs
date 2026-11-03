@@ -1,0 +1,5 @@
+.kpis{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));margin-bottom:20px}
+.btn.sm{height:36px;min-height:44px}
+body.pub .side,body.pub .top,body.pub .scrim{display:none!important}
+body.pub .main{margin-left:0!important}
+body.pub main{max-width:860px;margin:0 auto}

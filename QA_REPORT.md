@@ -1,4 +1,11 @@
-# QA report (this pass: Part 1 theming core only)
-Run: `node tests/theme.test.js`. Result: 36 passed, 0 failed (WCAG AA 4.5:1 for text, muted text, accent, text-on-accent and status tags across light, dark, custom light, custom dark, all 8 presets, plus the warn-and-fix flow). The first runs found failures in the original "ok" (green) and "warn" (amber) tag colours at 4.41:1; both darkened and re-run.
-Not run: jsdom smoke test, viewport/overflow sweeps (320 to 1920px), browser visual checks. `styles.css` still contains ~10 hard-coded `#fff` values, so some components may not fully follow dark mode yet.
-Not built: Settings > Appearance page (theme lives in a top-bar popover), Parts 2 and 3 (A to R), PWA, README feature docs, CHANGELOG.
+# QA report (HTML prototype)
+## Tests actually run: `npm install` then `npm test` (node --test tests/): 14 passed, 0 failed
+- tests/theme.test.js: 36 contrast checks (light, dark, custom light, custom dark, 8 presets, warn-and-fix flow).
+- tests/v2core.test.js (8): totals with discounts and VAT; KSh 100,000 paid 40,000 then 60,000 (two records, ends Paid); duplicate payment key ignored; overpayment, zero, negative, draft and cancelled payments rejected; credit and overdue status; quotation converts once and only when accepted; ageing buckets; cashbook running balance; seed consistency (every invoice, payment and line refers to a real customer, invoice or product; paid equals sum of payments; seed is identical on every reset).
+- tests/smoke.test.js (5, jsdom): every route (17 pages plus builder) renders content with no NaN/undefined and no console errors; every button on the new pages clicked without errors; partial payments, duplicate protection and Paid status through the real UI; public link sets Viewed only when opened; quotation accept then convert once, and unknown links show "Link not found"; builder saves an invoice with correct VAT total.
+## Not run / known limitations
+- No real browser, viewport (320 to 1920px) or visual check. Public customer page and mobile layouts are unverified visually; print/PDF uses the browser print dialog ("Save as PDF"), which jsdom cannot test.
+- Share links work only in the browser that created them (data is in localStorage). Reminders, WhatsApp and email are simulated or open the user's own app; nothing is delivered by the demo.
+- Portal sign-in is simulated and is not a security boundary. Real access control needs the server and row-level security in harxel-business-os-v2.
+- Invoices and quotations do not change stock. Cashbook counts sales as paid on the sale date (later customer payments on old sales are not dated separately). No business logo upload, no per-invoice templates, no date-range filter on invoices.
+- Not built: Customer 360, financial reconciliation and budgets, daily cash closing, employee workspace, approvals, document centre, business health and profitability pages, automation centre, industry modules, integrations page, users and permissions page.

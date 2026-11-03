@@ -44,7 +44,7 @@ function seed() {
   const tasks = T.map((t, i) => ({ id: "t" + (i + 1), title: t, assigneeId: employees[i % 8].id, priority: ["High", "Medium", "Low"][i % 3], due: iso((i % 7) - 2), status: TASK_STATUS[i % 4] }));
   const L = [["Karen Bistro Group", 450000], ["Westlands Offices Ltd", 280000], ["Green Valley School", 620000], ["Thika Road Mall Shops", 340000], ["Mombasa Road Builders", 910000], ["Kasarani Sacco", 150000], ["Lang'ata Clinic", 210000], ["Ngong Hardware", 380000], ["Ruiru Caterers", 120000], ["Eastleigh Traders", 530000]];
   const leads = L.map((l, i) => ({ id: "l" + (i + 1), name: l[0], value: l[1], stage: STAGES[i % 7], followUp: iso((i % 9) - 1), ownerId: employees[1 + (i % 2) * 5].id }));
-  return { products, customers, sales, expenses, suppliers, pos, employees, tasks, leads, read: [] };
+  return withV2({ products, customers, sales, expenses, suppliers, pos, employees, tasks, leads, read: [] });
 }
 const money = (n) => (n < 0 ? "-" : "") + "KSh " + Math.round(Math.abs(n)).toLocaleString("en-KE");
 const pct = (c, p) => (p ? ((c - p) / Math.abs(p)) * 100 : 0);
