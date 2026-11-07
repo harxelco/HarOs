@@ -4,7 +4,7 @@ var KEY = "harxel-theme-v1";
 var PRESETS = { orange: ["Burnt orange", "#C0391B"], blue: ["Blue", "#1D4ED8"], green: ["Green", "#15803D"], red: ["Red", "#B91C1C"], purple: ["Purple", "#7E22CE"], teal: ["Teal", "#0F766E"], pink: ["Pink", "#BE185D"], slate: ["Slate", "#475569"] };
 var DEF = { mode: "auto", accent: "orange", custom: "", bg: "", surface: "", radius: "default", density: "comfortable" };
 var PAL = { light: { bg: "#FAF8F3", card: "#FFFFFF", tx: "#202020", tx2: "#4A4A4A", mu: "#6B6B6B", bd: "#E2DDD4" }, dark: { bg: "#121212", card: "#1C1C1C", tx: "#F2F2F2", tx2: "#CFCFCF", mu: "#A3A3A3", bd: "#333333" } };
-var STATUS = { light: { ok: "#2A7249", okt: "#E6F3EA", warn: "#8A5A10", warnt: "#FBF0D9", bad: "#B3261E", badt: "#F9E1DF" }, dark: { ok: "#5CC98A", okt: "#14301F", warn: "#E3B04B", warnt: "#33270C", bad: "#F28B82", badt: "#3A1613" } };
+var STATUS = { light: { ok: "#2A7249", okt: "#E6F3EA", warn: "#8A5A10", warnt: "#FBF0D9", bad: "#B3261E", badt: "#F9E1DF", info: "#1D4ED8", infot: "#E3ECFD" }, dark: { ok: "#5CC98A", okt: "#14301F", warn: "#E3B04B", warnt: "#33270C", bad: "#F28B82", badt: "#3A1613", info: "#8FB4FF", infot: "#16233F" } };
 var RADIUS = { sharp: "4px", default: "16px", round: "24px" };
 
 function rgb(h) { h = h.replace("#", ""); if (h.length === 3) h = h.replace(/./g, "$&$&"); var n = parseInt(h, 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
@@ -35,6 +35,11 @@ function compute(t, dark) {
   var on = ["#FFFFFF", "#111111"].sort(function (x, y) { return Math.min(contrast(y, a), contrast(y, p2)) - Math.min(contrast(x, a), contrast(x, p2)); })[0];
   var v = { "--bg": p.bg, "--card": p.card, "--bg2": bg2, "--tx": p.tx, "--tx2": p.tx2, "--mu": p.mu, "--bd": p.bd,
     "--p": a, "--p2": p2, "--pt": pt, "--on-p": on, "--r": RADIUS[t.radius] || RADIUS.default };
+  var rgba = function (h, al) { var c = rgb(h); return "rgb(" + c[0] + " " + c[1] + " " + c[2] + " / " + al + ")"; };
+  Object.assign(v, { "--bg-elev": dark ? mix(p.card, "#FFFFFF", 0.05) : mix(p.card, p.bg, 0.0), "--glass": rgba(p.card, dark ? 0.72 : 0.78), "--glass-bd": rgba(dark ? "#FFFFFF" : "#000000", dark ? 0.1 : 0.07),
+    "--hover": mix(p.card, p.tx, 0.045), "--active": mix(p.card, p.tx, 0.09), "--focus": rgba(a, 0.35), "--dis-bg": mix(p.card, p.tx, 0.07), "--dis-tx": mix(p.card, p.tx, 0.45),
+    "--sh1": dark ? "0 1px 2px rgb(0 0 0 / .5)" : "0 1px 2px rgb(32 32 32 / .06)", "--sh2": dark ? "0 6px 18px rgb(0 0 0 / .45)" : "0 6px 18px rgb(32 32 32 / .08)", "--sh3": dark ? "0 18px 50px rgb(0 0 0 / .6)" : "0 18px 50px rgb(32 32 32 / .18)",
+    "--c-rev": a, "--c-exp": dark ? "#9AA7BD" : "#5B6B85", "--c-prof": STATUS[dark ? "dark" : "light"].ok, "--c-prev": p.mu });
   Object.assign(v, (function () { var o = {}, s = STATUS[dark ? "dark" : "light"]; for (var k in s) o["--" + k] = s[k]; return o; })());
   return { vars: v, warnings: warn, dark: dark };
 }

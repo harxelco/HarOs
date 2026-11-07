@@ -1,7 +1,7 @@
 "use strict";
 /* V2 modules: Invoices & Payments, Quotations, Customer Portal + share links, Cashbook, Command Centre. Uses the shared `db`. */
 (function () {
-  const V = window.V2, td = () => new Date().toISOString().slice(0, 10), PER = 10, S = () => db.settings;
+  const V = window.V2, td = () => L.today(), PER = 10, S = () => db.settings;
   const ST = { draft: ["Draft", ""], sent: ["Sent", "warn"], viewed: ["Viewed", "warn"], partially_paid: ["Partially paid", "warn"], paid: ["Paid", "ok"], cancelled: ["Cancelled", ""], credited: ["Credited", ""], accepted: ["Accepted", "ok"], rejected: ["Rejected", "bad"], expired: ["Expired", ""], converted: ["Converted", "ok"] };
   const stTag = (s, od) => tag(ST[s][0], ST[s][1]) + (od ? " " + tag("Overdue", "bad") : "");
   const cust = (id) => nameOf("customers", id, "Unknown"), log = (d, ev) => d.history.push({ at: td(), ev });
@@ -111,7 +111,7 @@
   };
 
   /* ---------- cashbook ---------- */
-  const entries = () => { const t = td(); return [...db.sales.filter((s) => s.paid > 0).map((s) => ({ date: s.date.slice(0, 10), in: s.paid, method: s.method, desc: `Sale ${s.ref}`, ref: s.ref })), ...db.payments.map((p) => ({ date: p.date, in: p.amount, method: p.method, desc: "Invoice payment " + db.invoices.find((i) => i.id === p.invoiceId).number, ref: p.ref })), ...db.expenses.map((e) => ({ date: e.date.slice(0, 10), out: e.amount, method: e.method, desc: `${e.category}: ${e.description}`, ref: "" }))].filter((e) => e.date <= t && (!ui.cbm || e.method === ui.cbm)); };
+  const entries = () => L.cashEntries(db).map((e) => ({ date: e.date, in: e.dir === "in" ? e.amount : 0, out: e.dir === "out" ? e.amount : 0, method: e.method || "", desc: e.desc, ref: e.ref || "" })).sort((a, b) => a.date.localeCompare(b.date));
   P["/cashbook"] = () => {
     const all = entries(), cutoff = addDays(td(), -(Number(ui.cbd) || 30)), op = ui.cbm ? 0 : S().opening, before = all.filter((e) => e.date < cutoff), start = op + before.reduce((a, e) => a + (e.in || 0) - (e.out || 0), 0), inP = all.filter((e) => e.date >= cutoff), days = V.cashbook(inP, start), tin = inP.reduce((a, e) => a + (e.in || 0), 0), tout = inP.reduce((a, e) => a + (e.out || 0), 0);
     return head("Cashbook", "Daily cash in and out from sales, invoice payments and expenses. Not a certified accounting record.", `<select class="in" aria-label="Method" data-set="cbm"><option value="">All methods</option>${opts(METHODS, ui.cbm || "")}</select>${rangeSel("cbd")}<button class="btn ghost" data-act="cbCsv">${ic("download", 16)}Export</button>`) +
@@ -189,5 +189,4 @@
   ["/invoice", "/quote", "/new"].forEach((x) => (NAVMAP[x] = [{ "/invoice": "Invoice", "/quote": "Quotation", "/new": "New document" }[x], "file-text"]));
   const baseRender = render;
   render = function (f) { const h = location.hash.slice(1); document.body.classList.toggle("pub", h.startsWith("/p/")); if (h.startsWith("/p/")) return publicView(h); return baseRender(f); };
-  render();
 })();

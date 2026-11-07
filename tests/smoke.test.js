@@ -45,6 +45,6 @@ test("public link marks viewed only when opened; quotation accept then convert o
 });
 test("builder saves an invoice and totals are correct", async () => {
   const w = boot("/"); await go(w, "/invoices"); w.document.querySelector('[data-act="newDoc"]').click(); await go(w, "/new");
-  const D = () => w.eval("db"), dd = w.eval("ui.draft"); w.eval("ui.draft.cust=db.customers[0].id;ui.draft.lines=[{pid:'',desc:'Delivery',qty:2,price:1000,disc:0}];ui.draft.vat=16"); await go(w, "/new");
+  const D = () => w.eval("db"), dd = w.eval("ui.draft"); w.eval("db.customers[0].creditLimit=0;ui.draft.cust=db.customers[0].id;ui.draft.lines=[{pid:'',desc:'Delivery',qty:2,price:1000,disc:0}];ui.draft.vat=16"); await go(w, "/new");
   const n = D().invoices.length; w.document.querySelector('[data-act="saveDoc"][data-send="1"]').click(); assert.equal(D().invoices.length, n + 1); assert.equal(D().invoices[0].total, 2320); assert.equal(D().invoices[0].status, "sent"); assert.deepEqual(errors, []);
 });

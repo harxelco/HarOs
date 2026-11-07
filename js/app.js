@@ -4,6 +4,7 @@ const ui = { days: 30, fdays: 90, q: "", cat: "", rtype: "Sales report", rdays: 
 const charts = {};
 try { const raw = localStorage.getItem(KEY); db = raw ? JSON.parse(raw) : seed(); role = localStorage.getItem(KEY + "-role") || role; } catch (e) { db = seed(); }
 if (!db.invoices) db = withV2(db);
+if ((db.v || 0) < 3) { db = withV3(db); }
 if (!ROLES[role]) role = "Business Owner";
 const $ = (s) => document.querySelector(s), esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const ICONS = {
@@ -44,19 +45,14 @@ const opts = (list, sel, f) => list.map((x) => { const [v, l] = f ? f(x) : [x, x
 const head = (t, s, a = "") => `<div class="head"><div><h1>${t}</h1><p>${s}</p></div><div class="acts">${a}</div></div>`;
 const stat = (l, v, c, h) => `<div class="card stat"><div class="stat-top"><span>${l}</span><div class="chip">${ic(statIcon(l), 18)}</div></div><b>${v}</b><div class="stat-foot">${c === undefined ? "" : `<em class="delta ${c >= 0 ? "up" : "down"}">${ic(c >= 0 ? "trending-up" : "trending-down", 14)}${Math.abs(c).toFixed(1)}%</em><span>vs previous period</span>`}${h ? `<span>${h}</span>` : ""}</div></div>`;
 const rangeSel = (key) => `<select class="in" aria-label="Date range" data-set="${key}">${[[7, "7 days"], [30, "30 days"], [90, "90 days"], [180, "6 months"], [365, "12 months"]].map(([d, l]) => `<option value="${d}"${ui[key] == d ? " selected" : ""}>${l}</option>`).join("")}</select>`;
-const table = (cols, rows, empty) => `<div class="scroll"><table><thead><tr>${cols.map((c) => `<th${c[0] === ">" ? ' class="r"' : ""}>${c.replace(/^>/, "")}</th>`).join("")}</tr></thead><tbody>${rows.length ? rows.map((r) => `<tr>${r.map((c, i) => `<td${cols[i][0] === ">" ? ' class="r"' : ""}>${c}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${cols.length}" class="mu">${empty || "No records."}</td></tr>`}</tbody></table></div>`;
+const table = (cols, rows, empty) => `<div class="scroll"><table class="stack"><thead><tr>${cols.map((c) => `<th${c[0] === ">" ? ' class="r"' : ""}>${c.replace(/^>/, "")}</th>`).join("")}</tr></thead><tbody>${rows.length ? rows.map((r) => `<tr>${r.map((c, i) => `<td data-l="${cols[i].replace(/^>/, "")}"${cols[i][0] === ">" ? ' class="r"' : ""}>${c}</td>`).join("")}</tr>`).join("") : `<tr><td colspan="${cols.length}" class="empty">${empty || "No records."}</td></tr>`}</tbody></table></div>`;
 const tag = (t, k = "") => `<span class="tag ${k}">${esc(t)}</span>`;
 const payTag = (s) => s.paid >= s.total ? tag("Paid", "ok") : s.paid > 0 ? tag("Partial", "warn") : tag("Unpaid", "bad");
 const search = (ph) => `<div class="searchbox">${ic("search", 16)}<input class="in" id="q" data-set="q" placeholder="${ph}" value="${esc(ui.q)}" aria-label="${ph}"></div>`;
 const futureDate = (d) => new Date(Date.now() + d * DAY).toISOString().slice(0, 10);
 
 const PAGES = {
-  "/": () => { const { cur, prev } = period(db, ui.days); charts.ov = { data: series(db, ui.days), keys: ["Revenue", "Expenses", "Profit"] };
-    const recent = [...db.sales].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 6), low = lowStock(db);
-    return head("Overview", "Apex General Supplies Ltd. · all figures come from the demo dataset", rangeSel("days") + '<a class="btn" href="#/sales">' + ic("plus", 16) + 'New sale</a>') +
-      `<div class="grid g3">${stat("Total revenue", money(cur.revenue), pct(cur.revenue, prev.revenue))}${stat("Total expenses", money(cur.expenses), pct(cur.expenses, prev.expenses))}${stat("Estimated net profit", money(cur.net), pct(cur.net, prev.net), "Revenue − cost of goods − expenses")}${stat("Orders", cur.orders, pct(cur.orders, prev.orders))}${stat("Outstanding receivables", money(receivable(db)), undefined, "Unpaid balances, all time")}${stat("Inventory value", money(inventoryValue(db)), undefined, "At cost price")}</div>` +
-      `<div class="card" style="margin-bottom:20px"><h2>Revenue, expenses and profit</h2><div class="chart" data-chart="ov"></div></div><div class="grid g2"><div class="card"><h2>Recent sales</h2>${recent.map((s) => `<div class="row"><span>${s.ref} · ${esc(nameOf("customers", s.customerId, "Walk-in"))}<br><small class="mu">${fmtDate(s.date)}</small></span><b>${money(s.total)}</b></div>`).join("")}</div>` +
-      `<div class="card"><h2>Low-stock products</h2>${low.length ? low.map((p) => `<div class="row"><span>${esc(p.name)}</span>${p.stock === 0 ? tag("Out of stock", "bad") : tag(p.stock + " left", "warn")}</div>`).join("") : '<p class="mu">All products are above their reorder level.</p>'}</div></div>`; },
+  "/": () => "",
   "/sales": () => { const q = ui.q.toLowerCase(), rows = [...db.sales].sort((a, b) => b.date.localeCompare(a.date)).filter((s) => (s.ref + nameOf("customers", s.customerId, "Walk-in")).toLowerCase().includes(q)).slice(0, 40);
     return head("Sales", "Record a sale and watch stock, receivables and the dashboard update.") + `<div class="card" style="margin-bottom:20px"><h2>New sale</h2><div class="form">
       <label>Customer<select class="in" id="s-c">${opts(db.customers, "", (c) => [c.id, c.name])}</select></label><label>Product<select class="in" id="s-p">${opts(db.products, "", (p) => [p.id, `${p.name} (${p.stock} in stock)`])}</select></label>
@@ -147,12 +143,12 @@ const A = {
 };
 function drawCharts() {
   document.querySelectorAll(".chart").forEach((el) => {
-    const c = charts[el.dataset.chart]; if (!c) return; const cv = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(), COL = { Revenue: cv("--p"), Expenses: cv("--mu"), Profit: cv("--ok"), "Cash flow": cv("--warn") }, W = Math.max(280, el.clientWidth), H = 270, m = { l: 48, r: 10, t: 10, b: 26 }, pw = W - m.l - m.r, ph = H - m.t - m.b, n = c.data.length;
+    const c = charts[el.dataset.chart]; if (!c) return; const cv = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim(), COL = { Revenue: cv("--c-rev"), Expenses: cv("--c-exp"), Profit: cv("--c-prof"), "Cash flow": cv("--warn") }, W = Math.max(280, el.clientWidth), H = 270, m = { l: 48, r: 10, t: 10, b: 26 }, pw = W - m.l - m.r, ph = H - m.t - m.b, n = c.data.length;
     const all = c.data.flatMap((d) => c.keys.map((k) => d[k])), mn = Math.min(0, ...all), mx = Math.max(1, ...all), X = (i) => m.l + (n > 1 ? i / (n - 1) : 0.5) * pw, Y = (v) => m.t + ph - ((v - mn) / (mx - mn)) * ph, f = (v) => (Math.abs(v) >= 1e6 ? (v / 1e6).toFixed(1) + "M" : Math.round(v / 1e3) + "k");
     let s = `<svg width="${W}" height="${H}" role="img" aria-label="Line chart">`;
     for (let i = 0; i <= 4; i++) { const v = mn + ((mx - mn) * i) / 4; s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${cv('--bd')}" stroke-dasharray="3 4"/><text x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end" font-size="12" fill="${cv('--mu')}">${f(v)}</text>`; }
     const every = Math.ceil(n / 6); c.data.forEach((d, i) => { if (i % every === 0) s += `<text x="${X(i)}" y="${H - 6}" text-anchor="middle" font-size="12" fill="${cv('--mu')}">${d.label}</text>`; });
-    c.keys.forEach((k) => (s += `<path d="${c.data.map((d, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(d[k]).toFixed(1)).join("")}" fill="none" stroke="${COL[k]}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${X(n - 1)}" cy="${Y(c.data[n - 1][k])}" r="3.5" fill="${cv('--card')}" stroke="${COL[k]}" stroke-width="2"/>`));
+    c.keys.forEach((k) => (s += `<path d="${UI.spline(c.data.map((d, i) => [X(i), Y(d[k])]))}" fill="none" stroke="${COL[k]}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${X(n - 1)}" cy="${Y(c.data[n - 1][k])}" r="3.5" fill="${cv('--card')}" stroke="${COL[k]}" stroke-width="2"/>`));
     s += `<line id="cur" y1="${m.t}" y2="${m.t + ph}" stroke="${cv('--bd')}" visibility="hidden"/></svg><div class="legend">${c.keys.map((k) => `<span><i style="background:${COL[k]}"></i>${k}</span>`).join("")}</div><div class="tip hide"></div>`;
     el.innerHTML = s; const svg = el.querySelector("svg"), tip = el.querySelector(".tip"), cur = svg.querySelector("#cur");
     const move = (e) => { const x = e.clientX - svg.getBoundingClientRect().left, i = Math.max(0, Math.min(n - 1, Math.round(((x - m.l) / pw) * (n - 1)))), d = c.data[i]; cur.setAttribute("x1", X(i)); cur.setAttribute("x2", X(i)); cur.setAttribute("visibility", "visible");
@@ -173,7 +169,7 @@ document.addEventListener("click", (e) => { const el = e.target.closest("[data-a
 document.addEventListener("change", (e) => { const t = e.target; if (t.dataset.cact) return A[t.dataset.cact](t, t.value); if (t.id === "role") { role = t.value; try { localStorage.setItem(KEY + "-role", role); } catch (x) { /* ignore */ } if (!(ROLES[role].includes("*") || ROLES[role].includes(location.hash.slice(1) || "/"))) location.hash = ROLES[role][0]; return render(); } if (t.dataset.set && t.tagName === "SELECT") { ui[t.dataset.set] = isNaN(t.value) || t.value === "" ? t.value : Number(t.value); render(); } });
 document.addEventListener("input", (e) => { const t = e.target; if (t.dataset.set && t.tagName === "INPUT") { ui[t.dataset.set] = t.value; render({ id: t.id, pos: t.selectionStart }); } });
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.id === "aq") A.ask(e.target); });
-window.addEventListener("hashchange", () => { ui.q = ""; if ($("#side").classList.contains("open")) A.menu(); render(); window.scrollTo(0, 0); });
+window.addEventListener("hashchange", () => { ui.q = ""; if (ui.pending) { Object.assign(ui, ui.pending); ui.pending = null; } if ($("#side").classList.contains("open")) A.menu(); render(); window.scrollTo(0, 0); });
 let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(drawCharts, 150); });
 document.querySelectorAll("[data-ic]").forEach((e) => (e.innerHTML = ic(e.dataset.ic, +e.dataset.s || 18)));
-render();
+
