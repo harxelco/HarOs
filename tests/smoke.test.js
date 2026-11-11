@@ -10,8 +10,8 @@ function boot(hash) {
 }
 const go = async (w, h) => { w.location.hash = h; await new Promise((r) => setTimeout(r, 20)); };
 const view = (w) => w.document.querySelector("#view").innerHTML;
-const ROUTES = ["/", "/command", "/notifications", "/sales", "/crm", "/customers", "/quotes", "/invoices", "/portal", "/inventory", "/purchases", "/tasks", "/employees", "/finance", "/cashbook", "/reports", "/assistant", "/new"];
-const SKIP = ["printInv", "printQ", "pubPrint", "receipt", "invCsv", "cbCsv", "copy", "reset", "draftPrint", "csv", "print"];
+const ROUTES = ["/", "/notifications", "/sales", "/crm", "/customers", "/quotes", "/invoices", "/portal", "/inventory", "/purchases", "/tasks", "/employees", "/finance", "/cashbook", "/reports", "/assistant", "/new"];
+const SKIP = ["shareDoc", "quick", "printInv", "printQ", "pubPrint", "receipt", "invCsv", "cbCsv", "copy", "reset", "draftPrint", "csv", "print"];
 
 test("every route renders content with no NaN/undefined and no console errors", async () => {
   const w = boot("/");
@@ -20,7 +20,7 @@ test("every route renders content with no NaN/undefined and no console errors", 
 });
 test("click every primary button on the new module pages", async () => {
   const w = boot("/");
-  for (const r of ["/command", "/quotes", "/invoices", "/portal", "/cashbook"]) { await go(w, r);
+  for (const r of ["/", "/employees", "/purchases", "/inventory", "/quotes", "/invoices", "/portal", "/cashbook"]) { await go(w, r);
     for (const b of [...w.document.querySelectorAll("#view [data-act]")]) { if (SKIP.includes(b.dataset.act) || !b.isConnected) continue; b.click(); }
     await go(w, r); assert.ok(view(w).length > 150, "page emptied: " + r); }
   assert.deepEqual(errors, []);

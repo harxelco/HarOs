@@ -1,11 +1,11 @@
-# QA report (HTML prototype)
-## Tests actually run: `npm install` then `npm test` (node --test tests/): 14 passed, 0 failed
-- tests/theme.test.js: 36 contrast checks (light, dark, custom light, custom dark, 8 presets, warn-and-fix flow).
-- tests/v2core.test.js (8): totals with discounts and VAT; KSh 100,000 paid 40,000 then 60,000 (two records, ends Paid); duplicate payment key ignored; overpayment, zero, negative, draft and cancelled payments rejected; credit and overdue status; quotation converts once and only when accepted; ageing buckets; cashbook running balance; seed consistency (every invoice, payment and line refers to a real customer, invoice or product; paid equals sum of payments; seed is identical on every reset).
-- tests/smoke.test.js (5, jsdom): every route (17 pages plus builder) renders content with no NaN/undefined and no console errors; every button on the new pages clicked without errors; partial payments, duplicate protection and Paid status through the real UI; public link sets Viewed only when opened; quotation accept then convert once, and unknown links show "Link not found"; builder saves an invoice with correct VAT total.
-## Not run / known limitations
-- No real browser, viewport (320 to 1920px) or visual check. Public customer page and mobile layouts are unverified visually; print/PDF uses the browser print dialog ("Save as PDF"), which jsdom cannot test.
-- Share links work only in the browser that created them (data is in localStorage). Reminders, WhatsApp and email are simulated or open the user's own app; nothing is delivered by the demo.
-- Portal sign-in is simulated and is not a security boundary. Real access control needs the server and row-level security in harxel-business-os-v2.
-- Invoices and quotations do not change stock. Cashbook counts sales as paid on the sale date (later customer payments on old sales are not dated separately). No business logo upload, no per-invoice templates, no date-range filter on invoices.
-- Not built: Customer 360, financial reconciliation and budgets, daily cash closing, employee workspace, approvals, document centre, business health and profitability pages, automation centre, industry modules, integrations page, users and permissions page.
+# QA_REPORT (2026-11-11)
+
+## Automated (executed)
+`npm install` then `npm test` (Node 22, jsdom): **27 tests, 27 pass, 0 fail** (smoke, theme, v2 core, and tests/v3.test.js covering PDF structure, routes and detail routes, dashboard figures vs dataset for every filter, health rules, approvals and roles, multi-line POs and stock, employee-task links, CRUD guards, double submit, sale validation, share messages and validation, completion dialog, quick actions, demo reset integrity).
+
+## Browser run (executed, headless Chromium via Playwright, not committed)
+30 scripted checks passed: Ctrl+K palette, form validation, supplier/customer/employee/task creation and edit, multi-line PO, dashboard approve and date filters, invoice creation to completion dialog, preview, real PDF download (valid, starts %PDF-), WhatsApp URL (wa.me/254712345678?text=...), mailto URL, invalid phone/email blocked, Escape closes, demo reset. No page errors or console errors.
+Layout: no horizontal overflow on 19 routes at 390px, 768px (light) and 1280px (dark). Screenshots reviewed: dashboard, share dialog (dark), purchase-order sheet (mobile).
+
+## Not tested
+Real devices (iOS/Android share sheet), real WhatsApp/email apps, printing on paper, Safari/Firefox. The Web Share file path could only be reasoned about, not exercised. The Inter font loads from Google Fonts, so offline machines fall back to the system font.
